@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zsp.comic.dao.UserDao">
+    <!--填写映射当前的Mapper接口，所有的增删改查的参数和返回值类型，
+		就可以直接填写缩写，不区分大小写，直接通过方法名去找类型-->
+    <!--要返回的结果,type就是数据库对应的对象-->
+    <resultMap id="user" type="com.zsp.comic.entity.User">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="username" property="username" jdbcType="VARCHAR" />       <!--property即为实体类的字段名,不要忘记jdbcType-->
+        <result column="password" property="password" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!--sql语句-->
+    <!--id即为前面声明的方法名，parameterType是要传入的参数的数据类型-->
+    <select id="getUserByUsernameAndPassword" resultMap="user" parameterType="com.zsp.comic.entity.User">
+        SELECT username,`password` FROM `t_user` WHERE username = #{username} AND `password` = #{password}
+    </select>
+
+    <select id="getUserByUsername" resultMap="user" parameterType="com.zsp.comic.entity.User">
+        SELECT `id`,username,`password` FROM `t_user` WHERE username = #{username}
+    </select>
+
+    <select id="getUserAuthorityById" resultType="java.lang.String">
+        SELECT a.authority
+        FROM `t_user` u, `t_authority` a, `t_user_authority` ua
+        WHERE u.id = ua.user_id AND a.id = ua.authority_id AND u.id = #{id}
+    </select>
+
+    <insert id="addUser" parameterType="com.zsp.comic.entity.User">
+        INSERT INTO `t_user` (username,password) VALUES(#{username},#{password})
+    </insert>
+
+    <update id="updateUser" parameterType="com.zsp.comic.entity.User">
+        UPDATE `t_user` SET username = #{username}, `password` = #{username} WHERE id = #{id}
+    </update>
+
+</mapper>
+

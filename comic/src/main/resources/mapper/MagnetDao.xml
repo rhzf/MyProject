@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zsp.comic.dao.MagnetDao">
+    <!--填写映射当前的Mapper接口，所有的增删改查的参数和返回值类型，
+		就可以直接填写缩写，不区分大小写，直接通过方法名去找类型-->
+    <!--要返回的结果,type就是数据库对应的对象-->
+    <resultMap id="magnet" type="com.zsp.comic.entity.Magnet">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="comic_id" property="comicId" jdbcType="INTEGER" />       <!--property即为实体类的字段名,不要忘记jdbcType-->
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="letter" property="letter" jdbcType="VARCHAR" />
+        <result column="image_url" property="imageUrl" jdbcType="VARCHAR" />
+        <result column="collect" property="collect" jdbcType="VARCHAR" />
+        <result column="magnet" property="magnet" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!--sql语句-->
+    <!--id即为前面声明的方法名，parameterType是要传入的参数的数据类型-->
+    <select id="getMagnetById" resultMap="magnet" parameterType="java.lang.Integer">
+        SELECT id, comic_id, `name`, letter, image_url, collect, magnet FROM `t_magnet` WHERE id = #{id}
+    </select>
+
+    <select id="getAllMagnet" resultMap="magnet">
+        SELECT id, comic_id, `name`, letter, image_url, collect, magnet FROM `t_magnet`
+    </select>
+
+    <select id="getMagnetByComicId" resultMap="magnet" parameterType="java.lang.Integer">
+        SELECT id, comic_id, `name`, letter, image_url, collect, magnet FROM `t_magnet` WHERE comic_id = #{comicId}
+    </select>
+
+    <select id="getMagnetByName" resultMap="magnet" parameterType="java.lang.String">
+        <!--<bind name="pattern" value="'%' + name + '%'"></bind>-->
+        SELECT id, comic_id, `name`, letter, image_url, collect, magnet FROM `t_magnet` WHERE `name` = #{name}
+    </select>
+
+    <select id="magnetLetterGroupByComicId" resultType="String" parameterType="java.lang.Integer">
+        SELECT m.letter FROM `t_magnet` m WHERE m.comic_id = #{comicId} GROUP BY m.letter
+    </select>
+
+    <insert id="addMagnet" parameterType="com.zsp.comic.entity.Magnet">
+        INSERT INTO `t_magnet` (`name`, letter, image_url, collect, magnet) VALUES(#{name}, #{letter}, #{imageUrl}, #{collect}, #{magnet})
+    </insert>
+
+    <update id="updateMagnet" parameterType="com.zsp.comic.entity.Magnet">
+        UPDATE `t_magnet` SET `name` = #{name}, letter = #{letter}, image_url = #{imageUrl}, collect = #{collect}, magnet = #{magnet} WHERE id = #{id}
+    </update>
+
+    <delete id="deleteMagnet" parameterType="java.lang.Integer">
+        DELETE FROM `t_magnet` WHERE id = #{id}
+    </delete>
+</mapper>
+

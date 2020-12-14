@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zsp.comic.dao.ComicDao">
+    <!--填写映射当前的Mapper接口，所有的增删改查的参数和返回值类型，
+		就可以直接填写缩写，不区分大小写，直接通过方法名去找类型
+        要返回的结果,type就是数据库对应的对象
+
+        这是动漫详情的映射
+    -->
+    <resultMap id="comicDetail" type="com.zsp.comic.entity.Comic">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="name" property="name" jdbcType="VARCHAR" />       <!--property即为实体类的字段名,不要忘记jdbcType,jdbcType为数据库字段类型名-->
+        <result column="image_url" property="imageUrl" jdbcType="VARCHAR" />
+        <result column="new_name" property="newName" jdbcType="VARCHAR" />
+        <result column="area" property="area" jdbcType="VARCHAR" />
+        <result column="type" property="type" jdbcType="VARCHAR" />
+        <result column="original_name" property="originalName" jdbcType="VARCHAR" />
+        <result column="other_name" property="otherName" jdbcType="VARCHAR" />
+        <result column="premiere_time" property="premiereTime" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="VARCHAR" />
+        <result column="author" property="author" jdbcType="VARCHAR" />
+        <result column="plot_type" property="plotType" jdbcType="VARCHAR" />
+        <result column="tag" property="tag" jdbcType="VARCHAR" />
+        <result column="company" property="company" jdbcType="VARCHAR" />
+        <result column="introduction" property="introduction"/>
+        <result column="official_website" property="officialWebsite" jdbcType="VARCHAR" />
+        <result column="resource" property="resource" jdbcType="VARCHAR" />
+        <result column="resource_password" property="resourcePassword" jdbcType="VARCHAR" />
+
+        <!--动漫视频地址一对多-->
+        <collection property="videos" ofType="com.zsp.comic.entity.Video">
+            <id column="videoId" property="id" jdbcType="INTEGER" />
+            <result column="videoName" property="name" jdbcType="VARCHAR" />
+            <result column="videoAddress" property="address" jdbcType="VARCHAR" />
+            <result column="videoCollect" property="collect" jdbcType="VARCHAR" />
+            <result column="video_url" property="videoUrl" jdbcType="VARCHAR" />
+        </collection>
+
+        <!--动漫跟磁力链接一对多-->
+        <collection property="magnets" ofType="com.zsp.comic.entity.Magnet">
+            <id column="magnetId" property="id" jdbcType="INTEGER" />
+            <result column="magnetName" property="name" jdbcType="VARCHAR" />
+            <result column="magnetImageUrl" property="imageUrl" jdbcType="VARCHAR" />
+            <result column="collect" property="collect" jdbcType="VARCHAR" />
+            <result column="magnet" property="magnet" jdbcType="VARCHAR" />
+        </collection>
+    </resultMap>
+
+    <!--这是动漫简易映射-->
+    <resultMap id="comic" type="com.zsp.comic.entity.Comic">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="name" property="name" jdbcType="VARCHAR" />       <!--property即为实体类的字段名,不要忘记jdbcType-->
+        <result column="image_url" property="imageUrl" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <!--sql语句-->
+    <!--id即为前面声明的方法名，parameterType是要传入的参数的数据类型-->
+    <select id="getAllComic" resultMap="comicDetail">
+        SELECT
+        c.id, c.`name`, c.image_url, c.new_name, c.area, c.`type`, c.original_name, c.other_name, c.premiere_time, c.status,
+        c.author, c.plot_type, c.tag, c.company, c.introduction, c.official_website, c.resource, c.resource_password
+        FROM `t_comic` c
+    </select>
+
+    <!--通过id查找动漫-->
+    <select id="getComicById" resultMap="comicDetail" parameterType="java.lang.Integer">
+        SELECT
+        id, `name`, image_url, new_name, area, `type`, original_name, other_name, premiere_time, status,
+        author, plot_type, tag, company, introduction, official_website, resource, resource_password
+        FROM `t_comic`
+        WHERE id = #{id}
+    </select>
+
+    <!--通过动漫名查找动漫-->
+    <select id="getComicByName" resultMap="comicDetail" parameterType="java.lang.String">
+        <bind name="pattern" value="'%' + name + '%'"></bind>
+        SELECT
+        id, `name`, image_url, new_name, area, `type`, original_name, other_name, premiere_time, status,
+        author, plot_type, tag, company, introduction, official_website, resource, resource_password
+        FROM `t_comic`
+        <where>
+            <if test="name != null">
+                `name` LIKE #{pattern}
+            </if>
+        </where>
+    </select>
+
+    <!--条件查找动漫-->
+    <!--地区-->
+    <!--版本-->
+    <!--年份，因为只查询年份，所以使用模糊查询-->
+    <!--状态-->
+    <!--类型-->
+    <!--bind中的value是传过来参数类型-->
+    <select id="getComicByCondition" resultMap="comicDetail" parameterType="com.zsp.comic.entity.Comic">
+        <!--<bind name="pattern1" value="'%' + area + '%'"></bind>-->
+        <!--<bind name="pattern2" value="'%' + type + '%'"></bind>-->
+        <!--<bind name="pattern3" value="'%' + premiereTime + '%'"></bind>-->
+        <!--<bind name="pattern4" value="'%' + status + '%'"></bind>-->
+        <!--<bind name="pattern5" value="'%' + plotType + '%'"></bind>-->
+        <choose>
+            <when test="area">
+                <bind name="pattern1" value="'%' + area + '%'"></bind>
+            </when>
+            <otherwise>
+                <bind name="pattern1" value="'%%'"/>
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="type">
+                <bind name="pattern2" value="'%' + type + '%'"></bind>
+            </when>
+            <otherwise>
+                <bind name="pattern2" value="'%%'"/>
+            </otherwise>
+        </choose>
+
+        <choose>
+            <when test="premiereTime">
+                <bind name="pattern3" value="'%' + premiereTime + '%'"></bind>
+            </when>
+            <otherwise>
+                <bind name="pattern3" value="'%%'"/>
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="status">
+                <bind name="pattern4" value="'%' + status + '%'"></bind>
+            </when>
+            <otherwise>
+                <bind name="pattern4" value="'%%'"/>
+            </otherwise>
+        </choose>
+
+        <choose>
+            <when test="plotType">
+                <bind name="pattern5" value="'%' + plotType + '%'"></bind>
+            </when>
+            <otherwise>
+                <bind name="pattern5" value="'%%'"/>
+            </otherwise>
+        </choose>
+        SELECT
+        id, `name`, image_url, new_name, area, `type`, original_name, other_name, premiere_time, status,
+        author, plot_type, tag, company, introduction, official_website, resource, resource_password
+        FROM `t_comic`
+        <where>
+            <if test="area != null and area != ''">
+                AND area LIKE #{pattern1}
+            </if>
+            <if test="type != null and type != ''">
+                AND `type` LIKE #{pattern2}
+            </if>
+            <if test="premiereTime != null and premiereTime != ''">
+                AND premiere_time LIKE #{pattern3}
+            </if>
+            <if test="status != null and status != ''">
+                AND status LIKE #{pattern4}
+            </if>
+            <if test="plotType != null and plotType != ''">
+                AND plot_type LIKE #{pattern5}
+            </if>
+        </where>
+    </select>
+
+    <!--通过状态查找动漫，就是每日更新页的动漫，连载动漫-->
+    <select id="serialComic" resultMap="comicDetail">
+        SELECT
+        id, `name`, image_url, new_name, area, `type`, original_name, other_name, premiere_time, status,
+        author, plot_type, tag, company, introduction, official_website, resource, resource_password
+        FROM `t_comic`
+        WHERE `status` = "连载" ORDER BY premiere_time DESC
+    </select>
+
+    <!--首页的连载动漫-->
+    <select id="indexSerialComic" resultMap="comicDetail" parameterType="java.lang.Integer">
+        SELECT
+        id, `name`, image_url, new_name, area, `type`, original_name, other_name, premiere_time, status,
+        author, plot_type, tag, company, introduction, official_website, resource, resource_password
+        FROM `t_comic`
+        WHERE `status` = "连载" ORDER BY premiere_time DESC LIMIT #{num}
+    </select>
+
+    <!--每日推荐页的动漫，随机查找动漫，num是查找推荐动漫的数量-->
+    <select id="recommendComic" resultMap="comicDetail">
+        SELECT
+        id, `name`, image_url, new_name, area, `type`, original_name, other_name, premiere_time, status,
+        author, plot_type, tag, company, introduction, official_website, resource, resource_password
+        FROM `t_comic`
+        WHERE `status` = "完结"
+        ORDER BY rand()
+    </select>
+
+    <!--首页推荐动漫，只是增加了返回结果限制-->
+    <select id="indexRecommendComic" resultMap="comicDetail" parameterType="java.lang.Integer">
+        SELECT
+            id, `name`, image_url, new_name, area, `type`, original_name, other_name, premiere_time, status,
+            author, plot_type, tag, company, introduction, official_website, resource, resource_password
+        FROM `t_comic`
+        WHERE `status` = "完结"
+        ORDER BY rand()
+        LIMIT #{num}
+    </select>
+
+    <!--获取所有地区标签-->
+    <select id="getAllArea" resultType="String">
+        SELECT `area` FROM `t_comic` GROUP BY `area`
+    </select>
+
+    <!--获取所有类型标签-->
+    <select id="getAllType" resultType="String">
+        SELECT `type` FROM `t_comic` GROUP BY `type`
+    </select>
+
+    <!--获取所有时间标签-->
+    <select id="getAllPremiereTime" resultType="String">
+        SELECT premiere_time FROM `t_comic` GROUP BY premiere_time
+    </select>
+
+    <!--获取所有状态标签-->
+    <select id="getAllStatus" resultType="String">
+        SELECT `status` FROM `t_comic` GROUP BY `status`
+    </select>
+
+    <!--获取所有剧情类型标签-->
+    <select id="getAllPlotType" resultType="String">
+        SELECT plot_type FROM `t_comic` GROUP BY plot_type
+    </select>
+
+    <insert id="addComic" parameterType="com.zsp.comic.entity.Comic">
+        INSERT INTO `t_comic`
+        (`name`, image_url, new_name, `area`, `type`, original_name, other_name, premiere_time, `status`,
+        author, plot_type, tag, company, introduction, official_website, resource, resource_password)
+        VALUES(#{name}, #{imageUrl}, #{newName}, #{area}, #{type}, #{originalName}, #{otherName}, #{premiereTime}, #{status},
+        #{author}, #{plotType}, #{tag}, #{company}, #{introduction}, #{officialWebsite}, #{resource}, #{resourcePassword})
+    </insert>
+
+    <update id="updateComic" parameterType="com.zsp.comic.entity.Comic">
+        UPDATE `t_comic`
+        SET `name` = #{name}, image_url = #{imageUrl}, new_name = #{newName}, `area` = #{area}, `type` = #{type}, original_name = #{originalName}, other_name = #{otherName}, premiere_time = #{premiereTime}, `status` = #{status},
+        author = #{author}, plot_type = #{plotType}, tag = #{tag}, company = #{company}, introduction = #{introduction}, official_website = #{officialWebsite}, resource = #{resource}, resource_password = #{resourcePassword}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteComic" parameterType="java.lang.Integer">
+        DELETE FROM `t_comic` WHERE id = #{id}
+    </delete>
+</mapper>
+
